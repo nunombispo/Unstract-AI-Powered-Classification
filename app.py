@@ -8,7 +8,7 @@ from streamlit_pdf_viewer import pdf_viewer
 # ----------------------------
 # Configuration
 # ----------------------------
-API_URL = "https://us-central.unstract.com/deployment/api/org_Az5q9jbwp5aR4Jfc/document_classification/"
+API_URL = "https://us-central.unstract.com/deployment/api/org_Az5q9jbwp5aR4Jfc/document_classification/"    # Replace with your API URL
 API_KEY = "315ad5cb-f01a-46f8-875d-4570b9ec52db"  # Replace with your API key
 
 # ----------------------------
@@ -28,7 +28,7 @@ uploaded_files = st.file_uploader(
     accept_multiple_files=True
 )
 
-# Add a button to start processing
+# If files are uploaded, process them
 if uploaded_files:
     st.success(f"✅ {len(uploaded_files)} file(s) uploaded successfully!")
     
@@ -48,7 +48,9 @@ if uploaded_files:
         if len(unique_files) != len(uploaded_files):
             st.info(f"Removed {len(uploaded_files) - len(unique_files)} duplicate files. Processing {len(unique_files)} unique files.")
         
+        # If there are unique files, process them
         if unique_files:
+
             # Initialize the dictionary to store PDFs by type
             organized_docs = {}
             
@@ -69,9 +71,10 @@ if uploaded_files:
             
             # Check if the API call was successful
             if response.status_code == 200:
+                # Get the result from the API call
                 result = response.json()
                 
-                # Check if execution is completed
+                # Check if the execution is completed
                 if result.get("message", {}).get("execution_status") == "COMPLETED":
                     # Extract results from the new response structure
                     results_list = result.get("message", {}).get("result", [])
@@ -86,6 +89,7 @@ if uploaded_files:
                             
                             # Check if the file was processed successfully
                             if pdf_file and file_result.get("status") == "Success":
+                                
                                 # Extract classification from the successful result
                                 try:
                                     doc_type = file_result.get("result", {}).get("output", {}).get("document_classification", {}).get("classification", "Unknown")
@@ -99,8 +103,10 @@ if uploaded_files:
                             elif pdf_file:
                                 st.error(f"File processing failed for {file_name}: {file_result.get('error', 'Unknown error')}")
                     else:
+                        # If no results are found, display an error message
                         st.error("No results found in the API response")
                 else:
+                    # If the execution is not completed, display an error message
                     st.error(f"Execution not completed. Status: {result.get('message', {}).get('execution_status', 'Unknown')}")
                     st.json(result)
 
@@ -109,11 +115,12 @@ if uploaded_files:
                 st.subheader("API Response")
                 st.json(result, expanded=False)
             else:
+                # If the API call fails, display an error message
                 st.error(f"Failed to classify files: {response.text}")
             
             # Display organized PDFs
             if organized_docs:
-                
+
                 # Display success message and divider
                 st.success(f"Successfully classified {len(organized_docs)} document types")
                 st.divider()
@@ -124,22 +131,28 @@ if uploaded_files:
                 
                 # Display each document type in a column
                 for idx, (doc_type, files) in enumerate(organized_docs.items()):
+                    
+                    # Display the document type in a column
                     with cols[idx]:
                         st.subheader(f"{doc_type} ({len(files)} files)")
                         st.divider()
                         
                         # Display each file in the column
                         for f in files:
+                            # Display the file name
                             st.markdown(f"**{f.name}**")
                             
                             # Display PDF in a container for better organization
                             with st.container():
+                                
                                 # Save uploaded file to a temporary file
                                 temp_file = tempfile.NamedTemporaryFile(delete=False)
                                 temp_file.write(f.getvalue())
                                 temp_file.close()
+                                
                                 # Display PDF using the temporary file
                                 pdf_viewer(temp_file.name, width="90%", height=500, zoom_level="auto")
                                 st.divider()     
             else:
+                # If no documents were successfully classified, display a warning message
                 st.warning("No documents were successfully classified.")
