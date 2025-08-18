@@ -121,7 +121,7 @@ if uploaded_files:
                         
                         for f in files:
                             st.markdown(f"**{f.name}**")
-                            
+                            st.divider()
                             # Display PDF in a container for better organization
                             with st.container():
                                 # Save uploaded file to a temporary file
