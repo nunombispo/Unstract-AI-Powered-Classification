@@ -49,7 +49,8 @@ if uploaded_files:
             st.info(f"Removed {len(uploaded_files) - len(unique_files)} duplicate files. Processing {len(unique_files)} unique files.")
         
         if unique_files:
-            organized_docs = {}  # Dictionary to store PDFs by type
+            # Initialize the dictionary to store PDFs by type
+            organized_docs = {}
             
             # Prepare the API call with all files at once
             headers = {
@@ -66,6 +67,7 @@ if uploaded_files:
             # Call the API with all files
             response = requests.request("POST", API_URL, headers=headers, data=payload, files=files)
             
+            # Check if the API call was successful
             if response.status_code == 200:
                 result = response.json()
                 
@@ -74,12 +76,15 @@ if uploaded_files:
                     # Extract results from the new response structure
                     results_list = result.get("message", {}).get("result", [])
                     
+                    # Check if there are any results
                     if results_list and len(results_list) > 0:
+                        
                         # Process all results
                         for file_result in results_list:
                             file_name = file_result.get("file", "Unknown")
                             pdf_file = unique_files.get(file_name)
                             
+                            # Check if the file was processed successfully
                             if pdf_file and file_result.get("status") == "Success":
                                 # Extract classification from the successful result
                                 try:
@@ -87,6 +92,7 @@ if uploaded_files:
                                 except (KeyError, AttributeError):
                                     doc_type = "Unknown"
                                 
+                                # Add the file to the organized_docs dictionary
                                 if doc_type not in organized_docs:
                                     organized_docs[doc_type] = []
                                 organized_docs[doc_type].append(pdf_file)
@@ -105,9 +111,10 @@ if uploaded_files:
             else:
                 st.error(f"Failed to classify files: {response.text}")
             
-
             # Display organized PDFs
             if organized_docs:
+                
+                # Display success message and divider
                 st.success(f"Successfully classified {len(organized_docs)} document types")
                 st.divider()
                 st.subheader("Classification Results")
@@ -115,23 +122,24 @@ if uploaded_files:
                 # Create columns for better layout
                 cols = st.columns(len(organized_docs), border=True)
                 
+                # Display each document type in a column
                 for idx, (doc_type, files) in enumerate(organized_docs.items()):
                     with cols[idx]:
                         st.subheader(f"{doc_type} ({len(files)} files)")
+                        st.divider()
                         
+                        # Display each file in the column
                         for f in files:
                             st.markdown(f"**{f.name}**")
-                            st.divider()
+                            
                             # Display PDF in a container for better organization
                             with st.container():
                                 # Save uploaded file to a temporary file
                                 temp_file = tempfile.NamedTemporaryFile(delete=False)
                                 temp_file.write(f.getvalue())
                                 temp_file.close()
-                                
                                 # Display PDF using the temporary file
                                 pdf_viewer(temp_file.name, width="90%", height=500, zoom_level="auto")
-                                
                                 st.divider()     
             else:
                 st.warning("No documents were successfully classified.")
