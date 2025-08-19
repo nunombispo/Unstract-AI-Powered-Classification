@@ -1,5 +1,7 @@
 import base64
+import os
 import tempfile
+from dotenv import load_dotenv
 import streamlit as st
 import requests
 from io import BytesIO
@@ -8,8 +10,9 @@ from streamlit_pdf_viewer import pdf_viewer
 # ----------------------------
 # Configuration
 # ----------------------------
-API_URL = "https://us-central.unstract.com/deployment/api/org_Az5q9jbwp5aR4Jfc/document_classification/"    # Replace with your API URL
-API_KEY = "315ad5cb-f01a-46f8-875d-4570b9ec52db"  # Replace with your API key
+load_dotenv()
+API_URL = os.getenv("API_URL")
+API_KEY = os.getenv("API_KEY")
 
 # ----------------------------
 # Streamlit App
