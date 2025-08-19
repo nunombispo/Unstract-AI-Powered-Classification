@@ -23,7 +23,7 @@ A Streamlit web application that uses the Unstract API to automatically classify
 1. **Clone the repository**
 
    ```bash
-   git clone <your-repository-url>
+   git clone https://github.com/nunombispo/Unstract-AI-Powered-Classification
    cd Unstract-AI-Powered-Classification
    ```
 
